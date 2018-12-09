@@ -1,7 +1,11 @@
 from boa.interop.System.Runtime import Log
 from boa.interop.System.Storage import Put, GetContext, Get, Delete
+from boa.interop.Ontology.Native import Invoke
+from boa.builtins import ToScriptHash, state
 
 ctx = GetContext()
+
+OntContract = ToScriptHash("AFmseVrdL9f9oyCzZefL9tG6UbvhUMqNMV")
 
 def Main(operation, args):
     if operation == 'CreatePreschool':
@@ -31,14 +35,20 @@ def Main(operation, args):
         preschoolId = args[0]
         childminderAddress = args[1]
         RemoveChildminderFromPreschool(preschoolId, childminderAddress)
-    elif operation == 'isParentBelongsToPreschool':
+    elif operation == 'IsParentBelongsToPreschool':
         preschoolId = args[0]
         parentAddress = args[1]
-        isParentBelongsToPreschool(preschoolId, parentAddress)
-    elif operation == 'isChildminderBelongsToPreschool':
+        IsParentBelongsToPreschool(preschoolId, parentAddress)
+    elif operation == 'IsChildminderBelongsToPreschool':
         preschoolId = args[0]
         childminderAddress = args[1]
-        isChildminderBelongsToPreschool(preschoolId, childminderAddress)
+        IsChildminderBelongsToPreschool(preschoolId, childminderAddress)
+    elif operation == 'SendTokenAndMessage':
+        senderAddress = args[0]
+        receiverAddress = args[1]
+        amount = args[2]
+        message = args[3]
+        SendTokenAndMessage(senderAddress, receiverAddress, amount, message)
 
     return False
 
@@ -105,7 +115,7 @@ def RemoveChildminderFromPreschool(preschoolId, childminderAddress):
             info_list.remove(info)
     PutValue("ChildminderToPreschool", info_list)
 
-def isParentBelongsToPreschool(preschoolId, parentAddress):
+def IsParentBelongsToPreschool(preschoolId, parentAddress):
     info_list = GetValueWithDefault("ParentToPreschool", [])
     for info in info_list:
         if (info['preschool_id'] == preschoolId) and (info['parent_address'] == parentAddress):
@@ -113,7 +123,7 @@ def isParentBelongsToPreschool(preschoolId, parentAddress):
             return
     Notify("False")
 
-def isChildminderBelongsToPreschool(preschoolId, childminderAddress):
+def IsChildminderBelongsToPreschool(preschoolId, childminderAddress):
     info_list = GetValueWithDefault("ChildminderToPreschool", [])
     for info in info_list:
         if (info['preschool_id'] == preschoolId) and (info['childminder_address'] == childminderAddress):
@@ -121,4 +131,33 @@ def isChildminderBelongsToPreschool(preschoolId, childminderAddress):
             return
     Notify("False")
 
+def SendTokenAndMessage(senderAddress, receiverAddress, amount, message):
+    param = state(senderAddress, receiverAddress, amount)
+    Address
+    res = Invoke(0, OntContract, 'transfer', [param])
+    if res and res == b'\x01':
+        info_list = GetValueWithDefault("Transactions", [])
+        info = {
+            'sender_address': senderAddress,
+            'receiver_address': receiverAddress,
+            'amount': amount,
+            'message': message,
+        }
+        info_list.append(info)
+        PutValue("Transactions", info_list)
 
+        Notify('True')
+        return True
+    else:
+        Notify('False')
+        return False
+        
+def ShowTransactions(childminderAddress):
+    info_list = GetValueWithDefault("Transactions", [])
+    for info in info_list:
+        if (info['receiver_address'] == childminderAddress):
+            next
+        info_list.remove(info)
+    Notify(Serialize(info_list))    
+    return True
+    
