@@ -1,11 +1,13 @@
 from boa.interop.System.Runtime import Log
 from boa.interop.System.Storage import Put, GetContext, Get, Delete
 from boa.interop.Ontology.Native import Invoke
-from boa.builtins import ToScriptHash, state
+from boa.builtins import ToScriptHash, state, concat
 
 ctx = GetContext()
 
 OntContract = ToScriptHash("AFmseVrdL9f9oyCzZefL9tG6UbvhUMqNMV")
+
+TRANSACTIONS_KEYS = ["sender_address", "receiver_address", "amount", "message"]
 
 def Main(operation, args):
     if operation == 'CreatePreschool':
@@ -56,6 +58,9 @@ def Main(operation, args):
         amount = args[2]
         message = args[3]
         SendTokenAndMessage(senderAddress, receiverAddress, amount, message)
+    elif operation == 'ShowTransactions':
+        childminderAddress = args[0]
+        ShowTransactions(childminderAddress)
 
     return False
 
@@ -162,16 +167,10 @@ def IsChildminderBelongsToPreschool(preschoolId, childminderAddress):
 
 def SendTokenAndMessage(senderAddress, receiverAddress, amount, message):
     param = state(senderAddress, receiverAddress, amount)
-    Address
-    res = Invoke(0, OntContract, 'transfer', [param])
+    res = Invoke(1, OntContract, 'transfer', [param])
     if res and res == b'\x01':
-        info_list = GetValueWithDefault("Transactions", [])
-        info = {
-            'sender_address': senderAddress,
-            'receiver_address': receiverAddress,
-            'amount': amount,
-            'message': message,
-        }
+        info_list = GetValueWithDefault("Transactions", [TRANSACTIONS_KEYS])
+        info = [senderAddress, receiverAddress, amount, message]
         info_list.append(info)
         PutValue("Transactions", info_list)
 
@@ -180,14 +179,8 @@ def SendTokenAndMessage(senderAddress, receiverAddress, amount, message):
     else:
         Notify('False')
         return False
-        
+
 def ShowTransactions(childminderAddress):
-    info_list = GetValueWithDefault("Transactions", [])
-    for info in info_list:
-        if (info['receiver_address'] == childminderAddress):
-            next
-        info_list.remove(info)
-    Notify(Serialize(info_list))    
+    info_list = GetValueWithDefault("Transactions", [TRANSACTIONS_KEYS])
+    Notify(info_list)
     return True
-
-
