@@ -19,6 +19,10 @@ def Main(operation, args):
         GetPreschoolName(preschoolId)
     elif operation == 'ShowPreschools':
         ShowPreschools()
+    elif operation == 'ShowPreschoolIds':
+        ShowPreschoolIds();
+    elif operation == 'ShowPreschoolNames':
+        ShowPreschoolNames()
     elif operation == 'AddParentToPreschool':
         preschoolId = args[0]
         parentAddress = args[1]
@@ -35,6 +39,9 @@ def Main(operation, args):
         preschoolId = args[0]
         childminderAddress = args[1]
         RemoveChildminderFromPreschool(preschoolId, childminderAddress)
+    elif operation == 'ShowChildmindersByPreschoolId':
+        preschoolId = args[0]
+        ShowChildmindersByPreschoolId(preschoolId)
     elif operation == 'IsParentBelongsToPreschool':
         preschoolId = args[0]
         parentAddress = args[1]
@@ -65,11 +72,10 @@ def PutValue(key, value):
     Put(ctx, key, s)
     return s
 
-
 def CreatePreschool(name):
     info_list = GetValueWithDefault("Preschools", [])
     id_ = len(info_list) + 1
-    info = { 'id': id_, 'name': name, 'budget_per_month': 10}
+    info = { 'id': id_, 'name': name, 'budget_per_month': 10 }
     info_list.append(info)
     PutValue("Preschools", info_list)
     Notify(id_)
@@ -87,12 +93,26 @@ def ShowPreschools():
     info_list = GetValueWithDefault("Preschools", [])
     Notify(Serialize(info_list))
 
+def ShowPreschoolIds():
+    info_list = GetValueWithDefault("Preschools", [])
+    id_list = []
+    for info in info_list:
+        id_list.append(info['id'])
+    Notify(id_list)
+
+def ShowPreschoolNames():
+    info_list = GetValueWithDefault("Preschools", [])
+    name_list = []
+    for info in info_list:
+        name_list.append(info['name'])
+    Notify(name_list)
+
 def AddParentToPreschool(preschoolId, parentAddress):
     info_list = GetValueWithDefault("ParentToPreschool", [])
     info = { 'preschool_id': preschoolId, 'parent_address': parentAddress }
     info_list.append(info)
     PutValue("ParentToPreschool", info_list)
-    Notify(Serialize(info_list))
+    Notify(info_list)
 
 def RemoveParentFromPreschool(preschoolId, parentAddress):
     info_list = GetValueWithDefault("ParentToPreschool", [])
@@ -114,6 +134,15 @@ def RemoveChildminderFromPreschool(preschoolId, childminderAddress):
         if (info['preschool_id'] == preschoolId) and (info['childminder_address'] == childminderAddress):
             info_list.remove(info)
     PutValue("ChildminderToPreschool", info_list)
+
+def ShowChildmindersByPreschoolId(preschoolId):
+    info_list = GetValueWithDefault("ChildminderToPreschool", [])
+    Notify(Serialize(info_list))
+    id_list = []
+    for info in info_list:
+        if info['preschool_id'] == preschoolId:
+            id_list.append(info['childminder_address'])
+    Notify(id_list)
 
 def IsParentBelongsToPreschool(preschoolId, parentAddress):
     info_list = GetValueWithDefault("ParentToPreschool", [])
@@ -160,4 +189,5 @@ def ShowTransactions(childminderAddress):
         info_list.remove(info)
     Notify(Serialize(info_list))    
     return True
-    
+
+
