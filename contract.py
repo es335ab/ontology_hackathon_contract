@@ -96,7 +96,11 @@ def GetPreschoolName(preschoolId):
 
 def ShowPreschools():
     info_list = GetValueWithDefault("Preschools", [])
-    Notify(Serialize(info_list))
+    res = []
+    res.append(['id', 'name', 'budget_per_month'])
+    for info in info_list:
+        res.append([info['id'], info['name'], info['budget_per_month']])
+    Notify(res)
 
 def ShowPreschoolIds():
     info_list = GetValueWithDefault("Preschools", [])
